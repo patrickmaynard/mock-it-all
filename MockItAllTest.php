@@ -202,6 +202,8 @@ class MockItAllTest extends KernelTestCase
         if (count($relationship['children']) === 0) {
             //We are at the deepest level. Add the mock creation command to the final logic.
             $this->finalLogic .= '        ' . $relationship['creationCommand'] . PHP_EOL;
+            $shortName = $this->getShortClassNameFromClassName($relationship['classNameToMock']);
+            $this->finalClassProprtyDefinitionStatements .= '    private ' . $shortName . ' $' . $relationship['variableName'] . ';' . PHP_EOL;
             return $relationship['variableName'];
         } else {
             //We are not at the deepest level.
