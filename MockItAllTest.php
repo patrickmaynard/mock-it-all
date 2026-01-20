@@ -8,6 +8,30 @@ use ReflectionClass;
 
 class MockItAllTest extends KernelTestCase
 {
+    public string $finalLogic;
+
+    public string $finalUseStatements;
+
+    public string $finalClassProprtyDefinitionStatements;
+
+    public array $allVariableNames = [];
+
+    //We'll assume we're not using more than 10 objects of the same type for now.
+    //(For the purpose of variable naming, it feels sensible to skip Zero and be one-indexed.)
+    public const ONE_TO_TEN = [
+            'Zero',
+            'One',
+            'Two',
+            'Three',
+            'Four',
+            'Five',
+            'Six',
+            'Seven',
+            'Eight',
+            'Nine',
+            'Ten'
+        ];
+
     public function setUp(): void
     {
         //This is where we will set up our mock objects.
@@ -16,6 +40,9 @@ class MockItAllTest extends KernelTestCase
         //(These will eventually be object, but nested arrays are fine for now.)
         $mockRelationships = [];
         $topLevelClassNameToMock = OrganSyncer::class;
+        $this->finalClassProprtyDefinitionStatements = '';
+        $this->finalLogic = '';
+        $this->finalUseStatements = '';
 
         //Each nested mockRelationship we create will be an array of the form:
         //[
@@ -40,12 +67,15 @@ class MockItAllTest extends KernelTestCase
         //allowing us to later assemble the whole thing.
 
         $relationships        = $this->createMockRelationships($topLevelClassNameToMock, $mockRelationships, 0);
-        $relationships      = $this->populateCreationCommands($relationships);
-        //$finalLogic         = $this->createFinalMockCreationLogic($relationships);
+        $relationships        = $this->populateCreationCommands($relationships);
+        $this->createFinalMockCreationLogic($relationships);
         //$finalUseStatements = $this->createFinalUseStatements($relationships);
 
         print PHP_EOL . 'Mock relationships:' . PHP_EOL;
-        print_r($relationships);
+        //print_r($relationships);
+        print $this->finalUseStatements . PHP_EOL . PHP_EOL;
+        print $this->finalClassProprtyDefinitionStatements . PHP_EOL . PHP_EOL;
+        print $this->finalLogic;
         print PHP_EOL;
 
     }
@@ -126,7 +156,17 @@ class MockItAllTest extends KernelTestCase
             strrpos($className,
                 '\\'
             )+1);
-        $variableName = 'my' . $variableName;
+        //Lowercase the first letter.
+        $variableName = strtolower(substr($variableName, 0, 1)) . substr($variableName, 1);
+        //Now iterate over our class constant ONE_TO_TEN and see if the variable name is already in use.
+        for ($i = 0; $i <= count(self::ONE_TO_TEN) - 1; $i++) {
+            $possibleVariableName = $variableName . self::ONE_TO_TEN[$i+1];
+            if (!in_array($possibleVariableName, $this->allVariableNames)) {
+                $variableName = $possibleVariableName;
+                $this->allVariableNames[] = $variableName;
+                break;
+            }
+        }
         return $variableName;
     }
 
@@ -138,6 +178,33 @@ class MockItAllTest extends KernelTestCase
                 '\\'
             )+1);
         return $variableName;
+    }
+
+    public function createFinalMockCreationLogic(array $relationship): string
+    {
+        //We need to start at the deepest level of dependencies and work our way up.
+        //That means calling createFinalMockCreationLogic() on each child relationship.
+        if (!str_contains($this->finalUseStatements, $relationship['classNameToMock']) ) {
+            $this->finalUseStatements .= 'use ' . $relationship['classNameToMock'] . ';' . PHP_EOL;
+        }
+        if (count($relationship['children']) === 0) {
+            //We are at the deepest level. Add the mock creation command to the final logic.
+            $this->finalLogic .= $relationship['creationCommand'] . PHP_EOL;
+            return $relationship['variableName'];
+        } else {
+            //We are not at the deepest level.
+            //Recurse to get variable names and then add the constructor for the class to the final logic.
+            //Children have already been stored in the order of their use in the constructor, so this will be easy.
+            $arguments = [];
+            foreach ($relationship['children'] as $child) {
+                $arguments[] = $this->createFinalMockCreationLogic($child);
+            }
+            $shortName = $this->getShortClassNameFromClassName($relationship['classNameToMock']);
+            $creationCommand = '$this->' . $relationship['variableName'] . ' = new ' . $shortName . '($this->' . implode(', $this->', $arguments) . ');';
+            $this->finalLogic .= $creationCommand . PHP_EOL;
+            $this->finalClassProprtyDefinitionStatements .= 'private ' . $shortName . ' $' . $relationship['variableName'] . ';' . PHP_EOL;
+            return $relationship['variableName'];
+        }
     }
 
     public function testTheTruthyThing(): void
