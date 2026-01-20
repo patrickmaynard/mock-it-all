@@ -5,7 +5,7 @@ Todo items:
 
 * Create a package for this by defining a dependency on the Symfony console component
 * Allow the user to type a bin/console command, then text output directly
-* Set up and official git tag and any boilerplate to make this a packagist package.
+* Set up an official git tag and any boilerplate to make this a packagist package.
   Then put it up on Packagist.
 * Get feedback from a couple friends.
 * Allow autocompletion of class names. (See how the make:entity command does it.)
