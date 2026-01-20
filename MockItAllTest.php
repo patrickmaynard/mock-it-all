@@ -2,6 +2,7 @@
 
 namespace App\Tests\Unit\Service\Codict;
 
+use SebastianBergmann\CodeCoverage\Report\PHP;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use App\Service\Codict\OrganSyncer;
 use ReflectionClass;
@@ -19,18 +20,18 @@ class MockItAllTest extends KernelTestCase
     //We'll assume we're not using more than 10 objects of the same type for now.
     //(For the purpose of variable naming, it feels sensible to skip Zero and be one-indexed.)
     public const ONE_TO_TEN = [
-            'Zero',
-            'One',
-            'Two',
-            'Three',
-            'Four',
-            'Five',
-            'Six',
-            'Seven',
-            'Eight',
-            'Nine',
-            'Ten'
-        ];
+        'Zero',
+        'One',
+        'Two',
+        'Three',
+        'Four',
+        'Five',
+        'Six',
+        'Seven',
+        'Eight',
+        'Nine',
+        'Ten'
+    ];
 
     public function setUp(): void
     {
@@ -71,12 +72,23 @@ class MockItAllTest extends KernelTestCase
         $this->createFinalMockCreationLogic($relationships);
         //$finalUseStatements = $this->createFinalUseStatements($relationships);
 
-        print PHP_EOL . 'Mock relationships:' . PHP_EOL;
-        //print_r($relationships);
-        print $this->finalUseStatements . PHP_EOL . PHP_EOL;
-        print $this->finalClassProprtyDefinitionStatements . PHP_EOL . PHP_EOL;
-        print $this->finalLogic;
-        print PHP_EOL;
+
+        $output = '<?php declare(strict_types=1); ' . PHP_EOL . PHP_EOL .
+            'namespace App\Your\Namespace\Here; ' . PHP_EOL . PHP_EOL .
+            $this->finalUseStatements .
+            'use PHPUnit\Framework\TestCase;'. PHP_EOL . PHP_EOL .
+            'class YourClassNameTest extends TestCase ' . PHP_EOL . '{' . PHP_EOL .
+            $this->finalClassProprtyDefinitionStatements . PHP_EOL . PHP_EOL . '    ' .
+            'public function setUp(): void' . PHP_EOL . '    {' . PHP_EOL . '        ' .
+            'parent::setUp();' . PHP_EOL . PHP_EOL .
+            $this->finalLogic . PHP_EOL . '    ' .
+            '}' . PHP_EOL . PHP_EOL .
+            '    function testTheTruthyThing(): void' . PHP_EOL . '    {' . PHP_EOL . '        ' .
+            '$this->assertTrue(true);' . PHP_EOL . '    ' .
+            '}' . PHP_EOL .
+            '}' . PHP_EOL;
+
+        print PHP_EOL . 'Test class stub:' . PHP_EOL . $output . PHP_EOL;
 
     }
 
@@ -189,7 +201,7 @@ class MockItAllTest extends KernelTestCase
         }
         if (count($relationship['children']) === 0) {
             //We are at the deepest level. Add the mock creation command to the final logic.
-            $this->finalLogic .= $relationship['creationCommand'] . PHP_EOL;
+            $this->finalLogic .= '        ' . $relationship['creationCommand'] . PHP_EOL;
             return $relationship['variableName'];
         } else {
             //We are not at the deepest level.
@@ -201,8 +213,8 @@ class MockItAllTest extends KernelTestCase
             }
             $shortName = $this->getShortClassNameFromClassName($relationship['classNameToMock']);
             $creationCommand = '$this->' . $relationship['variableName'] . ' = new ' . $shortName . '($this->' . implode(', $this->', $arguments) . ');';
-            $this->finalLogic .= $creationCommand . PHP_EOL;
-            $this->finalClassProprtyDefinitionStatements .= 'private ' . $shortName . ' $' . $relationship['variableName'] . ';' . PHP_EOL;
+            $this->finalLogic .= '        ' . $creationCommand . PHP_EOL;
+            $this->finalClassProprtyDefinitionStatements .= '    private ' . $shortName . ' $' . $relationship['variableName'] . ';' . PHP_EOL;
             return $relationship['variableName'];
         }
     }
