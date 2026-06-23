@@ -6,7 +6,7 @@ Todo items:
 * Move most functionality to a class called MockLogicCreator 
 * Create a package for this by defining a dependency on the Symfony console component.
   (See your other two packagist packages for a template of how this can work.)
-* Allow the user to type a bin/console command, then text output directly. 
+* Allow the user to type a bin/console command, then get text output directly. 
 * Set up an official git tag and any boilerplate to make this a packagist package.
   Then put it up on Packagist.
 * Set up a few basic PHPUnit tests for your MockLogicCreator class.
