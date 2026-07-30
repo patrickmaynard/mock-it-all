@@ -3,9 +3,10 @@ Tool for creating mock dependency chains automatically, letting you focus on the
 
 Todo items: 
 
-* Move most functionality to a class called MockLogicCreator 
-* Start to the process of creating a package for this by defining a dependency
-  on the Symfony console component. (More steps are below.)
+* x Move most functionality to a class called MockLogicCreator
+* x Create a composer.json file for autoloading
+* Update the folder structure to match the autoload file (creating src and test dirs)
+* Define a dependency on the Symfony console component. (More steps are below.)
 * Allow the user to type a bin/console command, then get text output directly. 
 * Set up an official git tag and any boilerplate to make this a packagist package.
   (See your existing two packagist projects to get a template for how to do this.) 
