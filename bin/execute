@@ -1,0 +1,47 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+namespace composer;
+
+use PatrickMaynard\MockItAll\MockLogicCreator;
+use PatrickMaynard\MockItAll\Stubs\President;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
+include $_composer_autoload_path ?? __DIR__ . '/../vendor/autoload.php';
+
+$application = new Application();
+
+// ... register a command that takes in a fully qualified class name (fqcn) and creates a test stub with mocking
+$application->register('create-test-stub-with-mocks')
+    ->addArgument('fqcn', InputArgument::REQUIRED)
+    ->setCode(function (InputInterface $input, OutputInterface $output): int {
+
+        //Here is where we do the actual creation of the output.
+        $stubLogic = PHP_EOL . PHP_EOL;
+        $mockLogicCreator = new MockLogicCreator;
+        //$stubLogic = $mockLogicCreator->createTestClassStub(President::class);
+
+        try {
+            $stubLogic  = $mockLogicCreator->createTestClassStub($input->getArgument('fqcn'));
+        } catch (\TypeError $e) {
+            $stubLogic  = 'The class was not found or was improperly entered.' . PHP_EOL;
+            $stubLogic .= 'Use the command with this type of formatting:  ' . PHP_EOL;
+            $stubLogic .= PHP_EOL;
+            $stubLogic .= 'php ./vendor/bin/mock-it-all/execute create-test-stub-with-mocks '; 
+            $stubLogic .= '"PatrickMaynard\MockItAll\Stubs\President"';
+        } catch (\Throwable $e) {
+            $stubLogic  = 'An unexpected error occured.';
+        }
+
+        print 'Test stub code:' . PHP_EOL . '=====' . PHP_EOL . $stubLogic . PHP_EOL . '====' . PHP_EOL;
+
+        return Command::SUCCESS;
+    });
+
+$application->run();

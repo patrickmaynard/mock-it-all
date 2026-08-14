@@ -1,6 +1,7 @@
 {
   "name": "patrick-maynard/mock-it-all",
   "type": "library",
+  "bin": ["bin/mock-it-all"],
   "description": "A simple tool that allows developers to automatically generate mock logic for PHPUnit tests",
   "keywords": ["testing", "mocking", "debugging"],
   "homepage": "http://home.patrickmaynard.com",
@@ -16,7 +17,8 @@
   ],
   "require": {
     "php": ">=8.0",
-    "twig/twig": "*"
+    "twig/twig": "*",
+    "symfony/console": "8.2.x-dev"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.6"
