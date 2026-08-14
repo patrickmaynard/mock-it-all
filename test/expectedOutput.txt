@@ -1,0 +1,50 @@
+<?php declare(strict_types=1); 
+
+namespace App\Your\Namespace\Here; 
+
+use PatrickMaynard\MockItAll\Stubs\President;
+use PatrickMaynard\MockItAll\Stubs\SecretaryOfState;
+use PatrickMaynard\MockItAll\Stubs\ChiefOfStaff;
+use PatrickMaynard\MockItAll\Stubs\Janitor;
+use PatrickMaynard\MockItAll\Stubs\PersonalChef;
+use PatrickMaynard\MockItAll\Stubs\FryCook;
+use PatrickMaynard\MockItAll\Stubs\SecretaryOfDefense;
+use PatrickMaynard\MockItAll\Stubs\SecretaryOfCommerce;
+use PHPUnit\Framework\TestCase;
+
+class YourClassNameTest extends TestCase 
+{
+    private ChiefOfStaff $chiefOfStaffOne;
+    private Janitor $janitorOne;
+    private FryCook $fryCookOne;
+    private PersonalChef $personalChefOne;
+    private SecretaryOfState $secretaryOfStateOne;
+    private ChiefOfStaff $chiefOfStaffTwo;
+    private SecretaryOfDefense $secretaryOfDefenseOne;
+    private ChiefOfStaff $chiefOfStaffThree;
+    private SecretaryOfCommerce $secretaryOfCommerceOne;
+    private President $presidentOne;
+
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->chiefOfStaffOne = $this->createMock(ChiefOfStaff::class);
+        $this->janitorOne = $this->createMock(Janitor::class);
+        $this->fryCookOne = $this->createMock(FryCook::class);
+        $this->personalChefOne = new PersonalChef($this->fryCookOne);
+        $this->secretaryOfStateOne = new SecretaryOfState($this->chiefOfStaffOne, $this->janitorOne, $this->personalChefOne);
+        $this->chiefOfStaffTwo = $this->createMock(ChiefOfStaff::class);
+        $this->secretaryOfDefenseOne = new SecretaryOfDefense($this->chiefOfStaffTwo);
+        $this->chiefOfStaffThree = $this->createMock(ChiefOfStaff::class);
+        $this->secretaryOfCommerceOne = new SecretaryOfCommerce($this->chiefOfStaffThree);
+        $this->presidentOne = new President($this->secretaryOfStateOne, $this->secretaryOfDefenseOne, $this->secretaryOfCommerceOne);
+
+    }
+
+    function testTheTruthyThing(): void
+    {
+        $this->assertTrue(true);
+    }
+}

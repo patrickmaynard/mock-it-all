@@ -88,7 +88,7 @@ class MockLogicCreator
             '}' . PHP_EOL .
             '}' . PHP_EOL;
 
-        print PHP_EOL . 'Test class stub:' . PHP_EOL . $output . PHP_EOL;
+        return $output;
     }
 
 
