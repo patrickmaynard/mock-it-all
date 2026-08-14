@@ -22,8 +22,8 @@ chmod +x ./bin/mock-it-all
   application to see whether all the documentation is accurate.
 * x If the documentation *is* accurate, move the note to self to a new file.
   Something like "development-team-notes-public.md"
-* Set up a more few basic PHPUnit tests for your MockLogicCreator class.
-* Set up another couple basic PHPUnit tests for your console command.
+* x Set up more few basic PHPUnit test logic for your MockLogicCreator class.
+* Set up some basic PHPUnit test logic for your console command.
 * Get feedback from a couple friends.
 * Allow autocompletion of class names for the classes being tested.
   (See how the make:entity command does it.)

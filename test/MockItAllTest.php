@@ -17,9 +17,11 @@ class MockItAllTest extends TestCase
 {
     private string $output; 
 
+    private MockLogicCreator $mockLogicCreator;
+
     public function setUp(): void
     {
-        $mockLogicCreator = new MockLogicCreator();
+        $this->mockLogicCreator = new MockLogicCreator();
 
         $janitor = new Janitor;
         $fryCook = new FryCook;
@@ -31,10 +33,10 @@ class MockItAllTest extends TestCase
         $president = new President($state, $defense, $commerce);
 
 
-        $this->output = $mockLogicCreator->createTestClassStub(President::class);
+        $this->output = $this->mockLogicCreator->createTestClassStub(President::class);
     }
 
-    public function testTheTruthyThing(): void
+    public function testThatExpectedStubIsReturned(): void
     {
         //file_put_contents('./test/expectedOutput.txt', $this->output);
 
@@ -42,6 +44,10 @@ class MockItAllTest extends TestCase
         self::assertEquals($expectedOutput, $this->output);
     }
 
-
+    public function testThatBadClassNameYieldsException()
+    {
+        $this->expectException(\TypeError::class);
+        $this->output = $this->mockLogicCreator->createTestClassStub('PatrickMaynard\Foo\Bar\Baz\Qux');         
+    }
 }
 
