@@ -9,7 +9,7 @@ In a pre-existing PHP project do the following to install the tool:
 composer require patrick-maynard/mock-it-all
 ```
 
-... then run the `create-stub-with-mocks` command as shown below.
+... then run the `create-test-stub-with-mocks` command as shown below.
 
 (This example creates stub test logic for the included President demo class.)
 
