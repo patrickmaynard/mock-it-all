@@ -6,7 +6,7 @@ Tool for creating mock dependency chains automatically, letting you focus on the
 In a pre-existing PHP project do the following to install the tool:
 
 ```
-composer require patrickmaynard/mock-it-all
+composer require patrick-maynard/mock-it-all
 ```
 
 ... then run the `create-stub-with-mocks` command as shown below.
@@ -14,15 +14,15 @@ composer require patrickmaynard/mock-it-all
 (This example creates stub test logic for the included President demo class.)
 
 ```
-php ./vendor/bin/mock-it-all/execute create-test-stub-with-mocks "PatrickMaynard\MockItAll\Stubs\President"
+php ./vendor/bin/mock-it-all create-test-stub-with-mocks "PatrickMaynard\MockItAll\Stubs\President"
 ```
 
 Note to self: If testing outside of an app context, it might be necessary to
 first symlink the mock-it-all directory like so:
 
 ```
-ln -s `pwd`/bin/ ./vendor/bin/mock-it-all
-chmod +x ./bin/execute
+ln -s `pwd`/bin/mock-it-all ./vendor/bin/mock-it-all
+chmod +x ./bin/mock-it-all
 ```
 
 
