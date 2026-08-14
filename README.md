@@ -11,7 +11,7 @@ composer require patrickmaynard/mock-it-all
 
 ... then run the `create-stub-with-mocks` command as shown below.
 
-(This example generate stub test logic for the included President demo class.)
+(This example creates stub test logic for the included President demo class.)
 
 ```
 php ./vendor/bin/mock-it-all/execute create-test-stub-with-mocks "PatrickMaynard\MockItAll\Stubs\President"
