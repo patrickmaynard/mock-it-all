@@ -26,6 +26,7 @@ chmod +x ./bin/mock-it-all
 * Set up some basic PHPUnit test logic for your console command.
 * Get feedback from a couple friends.
 * Allow autocompletion of class names for the classes being tested.
+  (This can be done with a --wizard flag, allowing a multi-step process.)
   (See how the make:entity command does it.)
 * Allow output of a test stub to a file in the project root instead of standard out
 * Provide a default test class name that can be modified
