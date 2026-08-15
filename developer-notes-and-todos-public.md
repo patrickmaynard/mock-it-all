@@ -31,6 +31,9 @@ chmod +x ./bin/mock-it-all
 * Allow autocompletion of class names for the classes being tested.
   (This can be done with a --wizard flag, allowing a multi-step process.)
   (See how the make:entity command does it.)
+  (Actually, the --wizard behavior should be the default behavior.)
+  (A --no-wizard option can be added for those who don't want it.)
+  (This is a breaking change, so a new major version should go along with it.)
 * Allow output of a test stub to a file in the project root instead of standard out
 * Provide a default test class name that can be modified
 * Provide a default test class namespace that can be modified
