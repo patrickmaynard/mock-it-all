@@ -23,6 +23,9 @@ chmod +x ./bin/mock-it-all
 * x If the documentation *is* accurate, move the note to self to a new file.
   Something like "development-team-notes-public.md"
 * x Set up more few basic PHPUnit test logic for your MockLogicCreator class.
+* Do another local installation in a copy of the Tag Monk project, making sure
+  that the console command has access to a class defition in the *wider Tag
+  Monk application* -- you have not done this yet!
 * Set up some basic PHPUnit test logic for your console command.
 * Get feedback from a couple friends.
 * Allow autocompletion of class names for the classes being tested.
