@@ -26,18 +26,27 @@ chmod +x ./bin/mock-it-all
 * x Do another local installation in a copy of the Tag Monk project, making
   sure that the console command has access to a class defition in the
   *wider Tag Monk application* -- you have not done this yet!
-* Add a --no-wizard flag to your console command.
-* Add a --with-wizard flag to your console command. For now, this should merely
+* x Add a --no-wizard flag to your console command.
+* x Add a --with-wizard flag to your console command. For now, this should merely
   state that it will be the future default behavior, but doesn't exist yet.
-* Make the command fail loudly if no mode flag is provided.
-* Set up some basic PHPUnit test logic for your console command.
-* Get feedback from a couple friends.
-* Allow autocompletion of class names for the classes being tested.
+* x Make the command fail loudly if no mode flag is provided.
+* x Allow autocompletion of class names for the classes being tested.
   (This can be done with a --wizard flag, allowing a multi-step process.)
   (See how the make:entity command does it.)
   (Actually, the --wizard behavior should be the default behavior.)
   (A --no-wizard option can be added for those who don't want it.)
   (This is a breaking change, so a new major version should go along with it.)
+* Have the wizard balk if the user just hits enter immediately, without entering
+  part of a class name first.
+* Have the wizard look for a "tests" folder or a "test" folder, then allow the
+  user to autocomplete which descendent directory should hold the new stub.
+* If no "tests" or "test" folder is found, have the wizard balk.
+* Make the autocomplete UX work in a more user-friendly way for both
+  autocompletes (FQCN autocompletion and test stub directory autocompletion).
+* Play around extensively in a fresh session, exploring all the options and
+  nailing down any big bugs.
+* Set up some basic PHPUnit test logic for your console command.
+* Get feedback from a couple friends.
 * Allow output of a test stub to a file in the project root instead of standard out
 * Provide a default test class name that can be modified
 * Provide a default test class namespace that can be modified

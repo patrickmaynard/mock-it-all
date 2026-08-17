@@ -7,28 +7,131 @@ namespace composer;
 
 use PatrickMaynard\MockItAll\MockLogicCreator;
 use PatrickMaynard\MockItAll\Stubs\President;
+use PatrickMaynard\MockItAll\CommandHelpers\ClassSelector;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-include $_composer_autoload_path ?? __DIR__ . '/../vendor/autoload.php';
+
+//We assign the loader to a variable while autoloading rather than doing the autoloading alone. 
+//This allows us to later call $loader->getClassMap() to allow autocompletion of FQCNs. 
+$loader = include $_composer_autoload_path ?? __DIR__ . '/../vendor/autoload.php';
 
 $application = new Application();
 
-// ... register a command that takes in a fully qualified class name (fqcn) and creates a test stub with mocking
+
+
+
+
+        //Populate the list of classes that can be autocompleted.
+        //Unless we explicitly get an --include-vendor-classes flag, we should skip those.
+        //
+        //getClassMap() only returns classes registered via Composer's classmap
+        //autoloading. Project classes autoloaded via PSR-4 (like our own src/
+        //classes) are resolved lazily and never appear there unless the
+        //autoloader was dumped with --optimize/--classmap-authoritative. So we
+        //also walk the loader's registered PSR-4 prefixes ourselves to pick up
+        //project classes regardless of how the autoloader was dumped.
+        $vendorDir = realpath(__DIR__ . '/../vendor') ?: false;
+
+        $classMap = $loader->getClassMap();
+        foreach ($loader->getPrefixesPsr4() as $namespacePrefix => $directories) {
+            foreach ($directories as $directory) {
+                $directory = rtrim($directory, '/');
+                if (!is_dir($directory)) {
+                    continue;
+                }
+                $files = new \RegexIterator(
+                    new \RecursiveIteratorIterator(
+                        new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS)
+                    ),
+                    '/\.php$/'
+                );
+                foreach ($files as $file) {
+                    $relativePath = substr($file->getPathname(), strlen($directory) + 1);
+                    $relativeClass = substr($relativePath, 0, -4); // strip ".php"
+                    $className = $namespacePrefix . str_replace('/', '\\', $relativeClass);
+                    $classMap[$className] = $file->getPathname();
+                }
+            }
+        }
+
+
+// ... register a command that creates a test stub with mocking
 $application->register('create-test-stub-with-mocks')
-    ->addArgument('fqcn', InputArgument::REQUIRED)
-    ->setCode(function (InputInterface $input, OutputInterface $output): int {
+    ->addArgument('fqcn', InputArgument::OPTIONAL)
+    ->addOption('no-wizard', null, InputOption::VALUE_NEGATABLE, 'Whether to avoid a wizard', false)
+    ->addOption('with-wizard', null, InputOption::VALUE_NEGATABLE, 'Whether to have a wizard', false)
+    ->addOption('include-vendor-classes', null, InputOption::VALUE_NEGATABLE, 'Include vendor classes?', false)
+    ->setCode(function (InputInterface $input, OutputInterface $output) use ($classMap, $vendorDir): int {
+
+        
+        $classesForAutoComplete = [];
+        foreach ($classMap as $className => $path) {
+            $realPath = realpath($path) ?: $path;
+            $isVendorClass = $vendorDir !== false && str_starts_with($realPath, $vendorDir . DIRECTORY_SEPARATOR);
+            if (!$isVendorClass || $input->getOption('include-vendor-classes')) {
+                $classesForAutoComplete[] = $className;
+            }
+        }
+
+        if ($input->getOption('with-wizard') && $input->getArgument('fqcn')) {
+            print PHP_EOL . 
+                PHP_EOL . 
+                'Please choose to provide a class name OR use the wizard, but not both. ' . 
+                PHP_EOL . 
+                PHP_EOL
+                ;
+           return Command::FAILURE;
+        }
 
         //Here is where we do the actual creation of the output.
         $stubLogic = PHP_EOL . PHP_EOL;
         $mockLogicCreator = new MockLogicCreator;
         //$stubLogic = $mockLogicCreator->createTestClassStub(President::class);
 
+        //For now, we want no-wizard OR with-wizard to be explicitly set.
+        //Eventually, the wizard will be the default. 
+        //But for now, we want to ease users into having this behavior.
+        $noWizard = $input->getOption('no-wizard');
+        $withWizard = $input->getOption('with-wizard');
+
+        if ((!$noWizard && !$withWizard) || ($noWizard && $withWizard)) {
+            print PHP_EOL . 
+                'Please use EITHER the --with-wizard flag OR the --no-wizard flag.' . 
+                PHP_EOL . 
+                '(The --with-wizard behavior will be the default in a future version. ' . 
+                'For now, though, we are trying to make things explicit.)' . 
+                PHP_EOL . 
+                PHP_EOL 
+                ;
+            return Command::FAILURE;
+        }
+
+        if ($withWizard) {
+            $selector = new ClassSelector($classesForAutoComplete);
+                $class = $selector->ask($input, $output);
+
+            if ($class === null) {
+                return Command::FAILURE;
+            }
+
+            $output->writeln('');
+            $output->writeln(sprintf(
+                'Generating stub for <info>%s</info>.',
+                $class,
+            ));
+            $fqcn = $class;
+
+        } else {
+            $fqcn = $input->getArgument('fqcn');
+        }
+
         try {
-            $stubLogic  = $mockLogicCreator->createTestClassStub($input->getArgument('fqcn'));
+            $stubLogic  = $mockLogicCreator->createTestClassStub($fqcn);
         } catch (\TypeError $e) {
             $stubLogic  = 'The class was not found or was improperly entered.' . PHP_EOL;
             $stubLogic .= 'Use the command with this type of formatting:  ' . PHP_EOL;
