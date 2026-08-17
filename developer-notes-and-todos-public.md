@@ -23,9 +23,13 @@ chmod +x ./bin/mock-it-all
 * x If the documentation *is* accurate, move the note to self to a new file.
   Something like "development-team-notes-public.md"
 * x Set up more few basic PHPUnit test logic for your MockLogicCreator class.
-* Do another local installation in a copy of the Tag Monk project, making sure
-  that the console command has access to a class defition in the *wider Tag
-  Monk application* -- you have not done this yet!
+* x Do another local installation in a copy of the Tag Monk project, making
+  sure that the console command has access to a class defition in the
+  *wider Tag Monk application* -- you have not done this yet!
+* Add a --no-wizard flag to your console command.
+* Add a --with-wizard flag to your console command. For now, this should merely
+  state that it will be the future default behavior, but doesn't exist yet.
+* Make the command fail loudly if no mode flag is provided.
 * Set up some basic PHPUnit test logic for your console command.
 * Get feedback from a couple friends.
 * Allow autocompletion of class names for the classes being tested.
