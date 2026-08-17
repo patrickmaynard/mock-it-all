@@ -52,4 +52,6 @@ chmod +x ./bin/mock-it-all
 * Provide a default test class namespace that can be modified
 * Allow optional writing of a file within the actual test folder structure.
   This option can maybe allow creation of folders as well while we're at it.
+* Set up git hooks so that a cs fixer, phpstan and all tests run at appropriate
+  times.
 *
