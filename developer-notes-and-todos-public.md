@@ -11,12 +11,8 @@ chmod +x ./bin/mock-it-all
 ## Todo items:
 
 * x Move old finished todo items into a document called finished-todos-public.md
-* Test some more.
-* Create the new Symfony-integrated version of the command and test it.
-* Test some more.
-* Set up some basic PHPUnit test logic for your non-Symfony console command.
-* Verify that there's no easy way to test the SF-integrated version of the
-  command, since it relies on there being a full SF application present.
+* x Test some more.
+* x Set up some basic PHPUnit test logic for your non-Symfony console command.
 * Get feedback from a couple friends.
 * Allow output of a test stub to a file in the project root instead of standard out
 * Provide a default test class name that can be modified
@@ -26,4 +22,7 @@ chmod +x ./bin/mock-it-all
 * Set up git hooks so that a cs fixer, phpstan and all tests run at appropriate
   times.
 * Move old finished todo items onto the end of finished-todos-public.md
-*
+* Create a new packagist package that encapsulates a Symfony bundle, which
+  creates a main-application command that calls out to this library's logic,
+  much like the existing bundles for doctrine and twig add those libraries'
+  functionality to SF apps.
