@@ -1,6 +1,6 @@
 <?php declare(strict_types=1); 
 
-namespace App\Your\Namespace\Here; 
+namespace PatrickMaynard\MockItAll\Tests\Stubs; 
 
 use PatrickMaynard\MockItAll\Stubs\President;
 use PatrickMaynard\MockItAll\Stubs\SecretaryOfState;
@@ -12,7 +12,7 @@ use PatrickMaynard\MockItAll\Stubs\SecretaryOfDefense;
 use PatrickMaynard\MockItAll\Stubs\SecretaryOfCommerce;
 use PHPUnit\Framework\TestCase;
 
-class YourClassNameTest extends TestCase 
+class PresidentTest extends TestCase 
 {
     private ChiefOfStaff $chiefOfStaffOne;
     private Janitor $janitorOne;

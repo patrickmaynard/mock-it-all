@@ -33,7 +33,7 @@ class MockItAllTest extends TestCase
         $president = new President($state, $defense, $commerce);
 
 
-        $this->output = $this->mockLogicCreator->createTestClassStub(President::class);
+        $this->output = $this->mockLogicCreator->createTestClassStub(President::class, 'PatrickMaynard\MockItAll\Tests\Stubs');
     }
 
     public function testThatExpectedStubIsReturned(): void
@@ -47,7 +47,7 @@ class MockItAllTest extends TestCase
     public function testThatBadClassNameYieldsException()
     {
         $this->expectException(\TypeError::class);
-        $this->output = $this->mockLogicCreator->createTestClassStub('PatrickMaynard\Foo\Bar\Baz\Qux');         
+        $this->output = $this->mockLogicCreator->createTestClassStub('PatrickMaynard\Foo\Bar\Baz\Qux', 'Irrelevant\Namespace');
     }
 }
 

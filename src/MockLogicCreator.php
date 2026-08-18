@@ -32,7 +32,7 @@ class MockLogicCreator
 
 
 
-    public function createTestClassStub(string $classNameToMock)
+    public function createTestClassStub(string $classNameToMock, string $namespace)
     {
 
         //This is where we will set up our mock objects.
@@ -73,11 +73,13 @@ class MockLogicCreator
         //$finalUseStatements = $this->createFinalUseStatements($relationships);
 
 
+        $testClassName = $this->getShortClassNameFromClassName($topLevelClassNameToMock) . 'Test';
+
         $output = '<?php declare(strict_types=1); ' . PHP_EOL . PHP_EOL .
-            'namespace App\Your\Namespace\Here; ' . PHP_EOL . PHP_EOL .
+            'namespace ' . $namespace . '; ' . PHP_EOL . PHP_EOL .
             $this->finalUseStatements .
             'use PHPUnit\Framework\TestCase;'. PHP_EOL . PHP_EOL .
-            'class YourClassNameTest extends TestCase ' . PHP_EOL . '{' . PHP_EOL .
+            'class ' . $testClassName . ' extends TestCase ' . PHP_EOL . '{' . PHP_EOL .
             $this->finalClassPropertyDefinitionStatements . PHP_EOL . PHP_EOL . '    ' .
             'public function setUp(): void' . PHP_EOL . '    {' . PHP_EOL . '        ' .
             'parent::setUp();' . PHP_EOL . PHP_EOL .

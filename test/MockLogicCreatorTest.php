@@ -85,7 +85,7 @@ class MockLogicCreatorTest extends TestCase
      */
     public function testScalarConstructorParametersAreInlinedAsPlaceholders(): void
     {
-        $output = $this->mockLogicCreator->createTestClassStub(PressSecretary::class);
+        $output = $this->mockLogicCreator->createTestClassStub(PressSecretary::class, 'PatrickMaynard\MockItAll\Tests\Stubs');
 
         $expectedOutput = file_get_contents(__DIR__ . '/expectedPressSecretaryOutput.txt');
 

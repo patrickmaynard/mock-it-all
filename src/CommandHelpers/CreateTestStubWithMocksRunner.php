@@ -73,12 +73,18 @@ final class CreateTestStubWithMocksRunner
 
             // A test folder is only needed when we're about to write a file
             // there, so skip resolving (and, for the wizard, asking about) one
-            // entirely when just dumping the stub to stdout.
-            $testFolderPath = $dumpOutputWithoutWrite
-                ? ''
-                : $this->resolveTestFolder($input, $output, $projectRoot);
+            // entirely when just dumping the stub to stdout. Without a folder
+            // to work from, the namespace falls back to a mirrored guess
+            // rather than one derived from the project's PSR-4 mapping.
+            if ($dumpOutputWithoutWrite) {
+                $testFolderPath = '';
+                $namespace = NamespaceResolver::mirroredNamespace($fqcn);
+            } else {
+                [$testFolder, $testFolderPath] = $this->resolveTestFolder($input, $output, $projectRoot);
+                $namespace = NamespaceResolver::forTestFolder($projectRoot, $testFolder, $fqcn);
+            }
 
-            $stubLogic = $this->generateStub($fqcn);
+            $stubLogic = $this->generateStub($fqcn, $namespace);
 
             $this->writeOrDumpStub(
                 $output,
@@ -216,12 +222,15 @@ final class CreateTestStubWithMocksRunner
      * interactive selector (when --test-folder was omitted) or by
      * validating the --test-folder option directly. Only called when we're
      * actually about to write a file (i.e. not --dump-output-without-write).
+     *
+     * @return array{0: string, 1: string} [$testFolder (relative to
+     *   $projectRoot), $testFolderPath (absolute)]
      */
     private function resolveTestFolder(
         InputInterface $input,
         OutputInterface $output,
         string $projectRoot,
-    ): string {
+    ): array {
         $testFolderOption = $input->getOption('test-folder');
 
         if ($testFolderOption === null || $testFolderOption === '') {
@@ -243,8 +252,10 @@ final class CreateTestStubWithMocksRunner
             $output->writeln('');
             $output->writeln(sprintf('Using test folder <info>%s</info>.', $testFolder));
 
-            return rtrim($projectRoot, '/\\') . DIRECTORY_SEPARATOR
+            $testFolderPath = rtrim($projectRoot, '/\\') . DIRECTORY_SEPARATOR
                 . str_replace('/', DIRECTORY_SEPARATOR, $testFolder);
+
+            return [$testFolder, $testFolderPath];
         }
 
         $testFolder = $testFolderOption;
@@ -268,13 +279,13 @@ final class CreateTestStubWithMocksRunner
             );
         }
 
-        return $testFolderPath;
+        return [$testFolder, $testFolderPath];
     }
 
-    private function generateStub(string $fqcn): string
+    private function generateStub(string $fqcn, string $namespace): string
     {
         try {
-            return $this->mockLogicCreator->createTestClassStub($fqcn);
+            return $this->mockLogicCreator->createTestClassStub($fqcn, $namespace);
         } catch (\TypeError) {
             $message  = 'The class was not found or was improperly entered.' . PHP_EOL;
             $message .= 'Use the command with this type of formatting:  ' . PHP_EOL;
@@ -283,8 +294,10 @@ final class CreateTestStubWithMocksRunner
             $message .= '--fqcn="PatrickMaynard\MockItAll\Stubs\President" --test-folder=tests';
 
             throw CommandFailure::withMessage($message);
-        } catch (\Throwable) {
-            throw CommandFailure::withMessage('An unexpected error occured.');
+        } catch (\Throwable $throwable) {
+            throw CommandFailure::withMessage(
+                'An unexpected error occurred while generating the stub: ' . $throwable->getMessage() . PHP_EOL,
+            );
         }
     }
 

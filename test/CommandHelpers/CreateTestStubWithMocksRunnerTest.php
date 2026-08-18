@@ -6,6 +6,7 @@ use Composer\Autoload\ClassLoader;
 use PatrickMaynard\MockItAll\CommandHelpers\CreateTestStubWithMocksRunner;
 use PatrickMaynard\MockItAll\Stubs\President;
 use PatrickMaynard\MockItAll\Tests\CreatesTempDirectory;
+use PatrickMaynard\MockItAll\Tests\Fixtures\ThrowsOnLoad;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -92,7 +93,8 @@ class CreateTestStubWithMocksRunnerTest extends TestCase
         );
 
         self::assertSame(Command::SUCCESS, $exitCode);
-        self::assertStringContainsString('class YourClassNameTest extends TestCase', $printed);
+        self::assertStringContainsString('class PresidentTest extends TestCase', $printed);
+        self::assertStringContainsString('namespace PatrickMaynard\MockItAll\Tests\Stubs;', $printed);
         self::assertDirectoryDoesNotExist($projectRoot . '/tests');
     }
 
@@ -185,6 +187,39 @@ class CreateTestStubWithMocksRunnerTest extends TestCase
         self::assertSame(Command::FAILURE, $exitCode);
         self::assertStringContainsString('Not overwriting it', $printed);
         self::assertSame('<?php // already here', file_get_contents($projectRoot . '/tests/PresidentTest.php'));
+    }
+
+    /**
+     * Regression test for a real report: reflecting into a vendor class can
+     * trigger a load-time failure unrelated to the class simply not
+     * existing (e.g. Symfony's AsciiSlugger throwing a LogicException when
+     * symfony/translation-contracts isn't installed). That should surface
+     * the real error message rather than a generic "unexpected error".
+     */
+    public function testSurfacesTheRealExceptionMessageWhenGeneratingTheStubFails(): void
+    {
+        $projectRoot = $this->createTempDirectory();
+        file_put_contents($projectRoot . '/composer.json', '{}');
+        mkdir($projectRoot . '/tests');
+        chdir($projectRoot);
+
+        $loader = new ClassLoader();
+        $loader->addClassMap([
+            ThrowsOnLoad::class => __DIR__ . '/../Fixtures/ThrowsOnLoad.php',
+        ]);
+
+        [$exitCode, , $printed] = $this->runCommand(
+            $loader,
+            false,
+            ['--fqcn' => ThrowsOnLoad::class, '--test-folder' => 'tests'],
+        );
+
+        self::assertSame(Command::FAILURE, $exitCode);
+        self::assertStringContainsString(
+            'An unexpected error occurred while generating the stub: ' .
+            'Simulated load-time failure: an optional dependency is missing.',
+            $printed,
+        );
     }
 
     public function testFailsWhenNoTestFolderExistsAndNotDumping(): void
