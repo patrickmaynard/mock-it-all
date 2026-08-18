@@ -40,9 +40,17 @@ chmod +x ./bin/mock-it-all
   of all available classes.
 * x Have the wizard disallow the ability to hit "enter" before seeing which
   class name is selected.
+* x Fix the small bug in which typing "FryCook" causes a rendering bug in which
+  the selection is shown as "FryCookOfCommerce"
+* Provide some form of scrollability for very long autocomplete lists -- as, for
+  example, when allowing vendor classes and starting to type "Sebast" ... this
+  way the terminal session doesn't freak out.
 * Have the wizard look for a "tests" folder or a "test" folder, then allow the
   user to autocomplete which descendent directory should hold the new stub.
 * If no "tests" or "test" folder is found, have the wizard balk.
+* If the wizard is not active, require that a tests folder path be submitted,
+  and that it exist.
+* Update the readme documentation to reflect all of these new behaviors.
 * Make the autocomplete UX work in a more user-friendly way for both
   autocompletes (FQCN autocompletion and test stub directory autocompletion).
 * Play around extensively in a fresh session, exploring all the options and

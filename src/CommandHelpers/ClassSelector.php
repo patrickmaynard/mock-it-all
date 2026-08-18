@@ -65,6 +65,7 @@ final class ClassSelector
                     if ($query !== '') {
                         $query = substr($query, 0, -1);
                         $selected = 0;
+                        $matches = $this->filter($query);
                     }
 
                     $this->redraw($output, $query, $matches, $selected);
@@ -110,8 +111,11 @@ final class ClassSelector
      */
     private function filter(string $query): array
     {
+        // Require the user to type something before showing any
+        // suggestions, rather than dumping an arbitrary slice of classes
+        // up front.
         if ($query === '') {
-            return array_slice($this->classes, 0, 10);
+            return [];
         }
 
         $query = strtolower($query);
@@ -141,24 +145,34 @@ final class ClassSelector
         $output->write("\033[2K\r");
         $output->write('Class: ' . $query);
 
-        if ($matches === []) {
-            $output->write("\n<error>No matching classes.</error>");
-            return;
-        }
+        // Erase everything below the cursor before redrawing the match
+        // list. Without this, a shorter class name (or a shorter list)
+        // leaves stray characters/lines from the previous render behind,
+        // e.g. "FryCook" rendering as "FryCookOfCommerce" after
+        // "SecretaryOfCommerce" was previously drawn on that row.
+        $output->write("\033[0J");
 
         $output->write("\n");
 
-        foreach ($matches as $index => $class) {
-            if ($index === $selected) {
-                $output->writeln("  \033[7m$class\033[0m");
-            } else {
-                $output->writeln("  $class");
+        if ($matches === []) {
+            $message = $query === ''
+                ? '<comment>Start typing to search classes.</comment>'
+                : '<error>No matching classes.</error>';
+            $output->writeln($message);
+            $lines = 2;
+        } else {
+            foreach ($matches as $index => $class) {
+                if ($index === $selected) {
+                    $output->writeln("  \033[7m$class\033[0m");
+                } else {
+                    $output->writeln("  $class");
+                }
             }
+
+            $lines = count($matches) + 1;
         }
 
         // Move cursor back to the input line.
-        $lines = count($matches) + 1;
-
         $output->write("\033[{$lines}A");
         $output->write("\r");
         $output->write('Class: ' . $query);
