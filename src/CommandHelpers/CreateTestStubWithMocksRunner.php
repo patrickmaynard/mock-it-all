@@ -71,12 +71,12 @@ final class CreateTestStubWithMocksRunner
 
             $dumpOutputWithoutWrite = (bool) $input->getOption('dump-output-without-write');
 
-            [$testFolder, $testFolderPath] = $this->resolveTestFolder(
-                $input,
-                $output,
-                $projectRoot,
-                $dumpOutputWithoutWrite,
-            );
+            // A test folder is only needed when we're about to write a file
+            // there, so skip resolving (and, for the wizard, asking about) one
+            // entirely when just dumping the stub to stdout.
+            $testFolderPath = $dumpOutputWithoutWrite
+                ? ''
+                : $this->resolveTestFolder($input, $output, $projectRoot);
 
             $stubLogic = $this->generateStub($fqcn);
 
@@ -214,44 +214,37 @@ final class CreateTestStubWithMocksRunner
     /**
      * Resolves which folder the stub should be written to, either via the
      * interactive selector (when --test-folder was omitted) or by
-     * validating the --test-folder option directly.
-     *
-     * @return array{0: ?string, 1: string} [$testFolder, $testFolderPath]
+     * validating the --test-folder option directly. Only called when we're
+     * actually about to write a file (i.e. not --dump-output-without-write).
      */
     private function resolveTestFolder(
         InputInterface $input,
         OutputInterface $output,
         string $projectRoot,
-        bool $dumpOutputWithoutWrite,
-    ): array {
+    ): string {
         $testFolderOption = $input->getOption('test-folder');
 
         if ($testFolderOption === null || $testFolderOption === '') {
             $testFolderSelector = TestFolderSelector::forProjectRoot($projectRoot);
 
-            if ($testFolderSelector === null && !$dumpOutputWithoutWrite) {
+            if ($testFolderSelector === null) {
                 throw CommandFailure::withMessage(
-                    'No "tests" or "test" folder was found, and --dump-output-without-write flag was not used. ' .
+                    'No "tests" or "test" folder was found. ' .
                     'Please create one before using this command. ',
                 );
             }
 
-            $testFolder = $testFolderSelector?->ask($input, $output);
+            $testFolder = $testFolderSelector->ask($input, $output);
 
-            if (($testFolder === null || $testFolder === '') && !$dumpOutputWithoutWrite) {
-                throw CommandFailure::withMessage(
-                    'You did not choose a test folder, and the --dump-output-without-write flag was not used. ' .
-                    'Exiting. ',
-                );
+            if ($testFolder === null || $testFolder === '') {
+                throw CommandFailure::withMessage('You did not choose a test folder. Exiting. ');
             }
 
             $output->writeln('');
             $output->writeln(sprintf('Using test folder <info>%s</info>.', $testFolder));
 
-            $testFolderPath = rtrim($projectRoot, '/\\') . DIRECTORY_SEPARATOR
-                . str_replace('/', DIRECTORY_SEPARATOR, $testFolder ?? '');
-
-            return [$testFolder, $testFolderPath];
+            return rtrim($projectRoot, '/\\') . DIRECTORY_SEPARATOR
+                . str_replace('/', DIRECTORY_SEPARATOR, $testFolder);
         }
 
         $testFolder = $testFolderOption;
@@ -275,7 +268,7 @@ final class CreateTestStubWithMocksRunner
             );
         }
 
-        return [$testFolder, $testFolderPath];
+        return $testFolderPath;
     }
 
     private function generateStub(string $fqcn): string
