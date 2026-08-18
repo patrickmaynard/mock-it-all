@@ -106,8 +106,19 @@ class MockLogicCreator
             //If it does, we will recursively call this function with the constructor's arguments.
             $reflectionObject = new ReflectionClass($classNameToMock);
             foreach ($reflectionObject->getConstructor()->getParameters() as $parameter) {
+                $parameterType = $parameter->getType();
+                //Scalar/builtin parameters (string, bool, array, ...) aren't classes we can
+                //mock or reflect into further - get_class_methods() would throw a TypeError
+                //if we tried. Give them a placeholder literal instead.
+                if (!$parameterType instanceof \ReflectionNamedType || $parameterType->isBuiltin()) {
+                    $relationship['children'][] = $this->createScalarPlaceholderRelationship(
+                        $parameterType instanceof \ReflectionNamedType ? $parameterType->getName() : 'mixed',
+                        $depth + 1,
+                    );
+                    continue;
+                }
                 $relationship['children'][] = $this
-                    ->createMockRelationships($parameter->getType()->getName(), $mockRelationships, $depth + 1);
+                    ->createMockRelationships($parameterType->getName(), $mockRelationships, $depth + 1);
             }
             return $relationship;
         }
@@ -148,8 +159,40 @@ class MockLogicCreator
             'children' => [],
             'depth' => $depth,
             'creationCommand' => '---',
-            'variableName' => $variableName
+            'variableName' => $variableName,
+            'isScalar' => false,
         ];
+    }
+
+    /**
+     * A leaf relationship for a builtin-typed constructor parameter (string, bool,
+     * array, ...). There's no class to mock, so this just carries a placeholder
+     * literal to inline directly into the parent's constructor call.
+     */
+    public function createScalarPlaceholderRelationship(string $builtinTypeName, int $depth): array
+    {
+        return [
+            'classNameToMock' => null,
+            'children' => [],
+            'depth' => $depth,
+            'creationCommand' => '---',
+            'variableName' => null,
+            'isScalar' => true,
+            'placeholderLiteral' => $this->placeholderLiteralForBuiltinType($builtinTypeName),
+        ];
+    }
+
+    public function placeholderLiteralForBuiltinType(string $builtinTypeName): string
+    {
+        return match ($builtinTypeName) {
+            'string' => "''",
+            'int' => '0',
+            'float' => '0.0',
+            'bool' => 'false',
+            'array' => '[]',
+            'iterable' => '[]',
+            default => 'null',
+        };
     }
 
 
@@ -157,6 +200,12 @@ class MockLogicCreator
 
     public function createFinalMockCreationLogic(array $relationship): string
     {
+        //A scalar placeholder isn't a class at all - there's no mock/property to set
+        //up, just a literal to inline directly into whichever constructor call needs it.
+        if ($relationship['isScalar']) {
+            return $relationship['placeholderLiteral'];
+        }
+
         //We need to start at the deepest level of dependencies and work our way up.
         //That means calling createFinalMockCreationLogic() on each child relationship.
         if (!str_contains($this->finalUseStatements, $relationship['classNameToMock']) ) {
@@ -167,20 +216,21 @@ class MockLogicCreator
             $this->finalLogic .= '        ' . $relationship['creationCommand'] . PHP_EOL;
             $shortName = $this->getShortClassNameFromClassName($relationship['classNameToMock']);
             $this->finalClassPropertyDefinitionStatements .= '    private ' . $shortName . ' $' . $relationship['variableName'] . ';' . PHP_EOL;
-            return $relationship['variableName'];
+            return '$this->' . $relationship['variableName'];
         } else {
             //We are not at the deepest level.
-            //Recurse to get variable names and then add the constructor for the class to the final logic.
-            //Children have already been stored in the order of their use in the constructor, so this will be easy.
+            //Recurse to get variable names (or scalar literals) and then add the
+            //constructor for the class to the final logic. Children have already been
+            //stored in the order of their use in the constructor, so this will be easy.
             $arguments = [];
             foreach ($relationship['children'] as $child) {
                 $arguments[] = $this->createFinalMockCreationLogic($child);
             }
             $shortName = $this->getShortClassNameFromClassName($relationship['classNameToMock']);
-            $creationCommand = '$this->' . $relationship['variableName'] . ' = new ' . $shortName . '($this->' . implode(', $this->', $arguments) . ');';
+            $creationCommand = '$this->' . $relationship['variableName'] . ' = new ' . $shortName . '(' . implode(', ', $arguments) . ');';
             $this->finalLogic .= '        ' . $creationCommand . PHP_EOL;
             $this->finalClassPropertyDefinitionStatements .= '    private ' . $shortName . ' $' . $relationship['variableName'] . ';' . PHP_EOL;
-            return $relationship['variableName'];
+            return '$this->' . $relationship['variableName'];
         }
     }
 
@@ -188,6 +238,10 @@ class MockLogicCreator
 
     public function populateCreationCommands(array $relationship): array
     {
+        if ($relationship['isScalar']) {
+            //A literal placeholder; there's no mock/constructor command to build.
+            return $relationship;
+        }
         if (count($relationship['children']) > 0) {
             //If the class has children, we will recursively call this function on each child.
             foreach ($relationship['children'] as $key => $child) {

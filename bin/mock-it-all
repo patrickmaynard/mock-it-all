@@ -188,6 +188,20 @@ $application->register('create-test-stub-with-mocks')
         } else {
             $testFolder = $testFolderOption;
 
+            $testFolderRootSegment = explode('/', str_replace('\\', '/', trim($testFolder, '/\\')))[0];
+
+            if (!in_array($testFolderRootSegment, TestFolderSelector::CANDIDATE_ROOT_NAMES, true)) {
+                print PHP_EOL .
+                    PHP_EOL .
+                    'The --test-folder "' . $testFolder . '" does not start with one of the ' .
+                    'allowed test folder names (' . implode(', ', TestFolderSelector::CANDIDATE_ROOT_NAMES) . '). ' .
+                    'Please choose (or create) a folder beginning with one of those names. ' .
+                    PHP_EOL .
+                    PHP_EOL
+                    ;
+                return Command::FAILURE;
+            }
+
             $testFolderPath = rtrim($projectRoot, '/\\') . DIRECTORY_SEPARATOR
                 . str_replace('/', DIRECTORY_SEPARATOR, $testFolder);
 
@@ -271,9 +285,8 @@ $application->register('create-test-stub-with-mocks')
                 'Test stub written to <info>%s</info>.',
                 $testStubPath,
             ));
+            $output->writeln('');
         }
-
-        print PHP_EOL . 'Test stub code:' . PHP_EOL . '=====' . PHP_EOL . $stubLogic . PHP_EOL . '====' . PHP_EOL;
 
         return Command::SUCCESS;
     });

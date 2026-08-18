@@ -10,7 +10,7 @@ use RecursiveIteratorIterator;
 
 final class TestFolderSelector extends AutocompleteSelector
 {
-    private const CANDIDATE_ROOT_NAMES = ['tests', 'test'];
+    public const CANDIDATE_ROOT_NAMES = ['tests', 'test', 'testing'];
 
     /**
      * @param list<string> $folders
@@ -80,8 +80,16 @@ final class TestFolderSelector extends AutocompleteSelector
     }
 
     protected function label(): string
-    {
-        return 'Test folder';
+    { 
+        $stringified = '';
+        foreach (self::CANDIDATE_ROOT_NAMES as $index => $name) {
+            if ($index === count(self::CANDIDATE_ROOT_NAMES) - 1) {
+                $stringified .= 'or ' . $name;
+            } else {
+                $stringified .= $name . ', ';
+            }
+        }
+        return "Test folder (must begin with folder name $stringified)";
     }
 
     protected function emptyQueryMessage(): string

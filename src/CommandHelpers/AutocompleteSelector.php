@@ -67,16 +67,22 @@ abstract class AutocompleteSelector
                 $key = fread($stream, 1);
 
                 if ($key === false || $key === '') {
+                    $this->finishDisplay($output);
+
                     return null;
                 }
 
                 // Ctrl-C
                 if ($key === "\x03") {
+                    $this->finishDisplay($output);
+
                     return null;
                 }
 
                 // Enter
                 if ($key === "\n" || $key === "\r") {
+                    $this->finishDisplay($output);
+
                     return $matches[$selected] ?? ($query !== '' ? $query : null);
                 }
 
@@ -254,6 +260,19 @@ abstract class AutocompleteSelector
         $output->write("\033[{$lines}A");
         $output->write("\r");
         $output->write($label . ': ' . $query);
+    }
+
+    /**
+     * The last redraw() left the cursor sitting right after the label/query
+     * text, with the match list still drawn on the lines below it (cursor
+     * moved back up so the next keystroke can redraw in place). Clear that
+     * leftover list and drop to a fresh line so whatever the caller prints
+     * next doesn't get interleaved with stale rows.
+     */
+    private function finishDisplay(OutputInterface $output): void
+    {
+        $output->write("\033[0J");
+        $output->write("\n");
     }
 
     private function setRawMode(): void
