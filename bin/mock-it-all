@@ -12,9 +12,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 //We assign the loader to a variable while autoloading rather than doing the autoloading alone.
 //This allows us to later call $loader->getClassMap() to allow autocompletion of FQCNs.
-$loader = include $_composer_autoload_path ?? __DIR__ . '/../vendor/autoload.php';
+$autoloadPath = $_composer_autoload_path ?? __DIR__ . '/../vendor/autoload.php';
+$loader = include $autoloadPath;
 
-$vendorDir = realpath(__DIR__ . '/../vendor') ?: false;
+// Derived from the same $autoloadPath used above rather than __DIR__: once this
+// package is installed as a dependency, __DIR__ resolves to this file's own
+// location inside vendor/patrick-maynard/mock-it-all/bin, not the consuming
+// project's bin/, so "__DIR__ . '/../vendor'" would point at the wrong vendor
+// directory (or this library's own, if it happens to have one).
+$vendorDir = realpath(dirname($autoloadPath)) ?: false;
 
 $application = new Application();
 
