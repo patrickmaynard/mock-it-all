@@ -45,6 +45,13 @@ chmod +x ./bin/mock-it-all
   autocompletes (FQCN autocompletion and test stub directory autocompletion).
 * Play around extensively in a fresh session, exploring all the options and
   nailing down any big bugs.
+* Abstract most of the command logic into a new class, which should contain at
+  least four separate functions to get some of this bloat tamed. This will be
+  preparation for the process of creating a new version of the command that
+  integrates more closely with any existing SF application, should the library
+  be installed in an existing SF app.
+* Test some more.
+* Create the new Symfony-integrated version of the command and test it.
 * Set up some basic PHPUnit test logic for your console command.
 * Get feedback from a couple friends.
 * Allow output of a test stub to a file in the project root instead of standard out
