@@ -30,7 +30,10 @@
   },
   "autoload-dev": {
     "psr-4" : {
-      "PatrickMaynard\\MockItAll\\Tests\\" : "tests/"
+      "PatrickMaynard\\MockItAll\\Tests\\" : "test/"
     }
+  },
+  "scripts": {
+    "test": "phpunit"
   }
 }
