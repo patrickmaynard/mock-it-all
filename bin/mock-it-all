@@ -63,12 +63,13 @@ $application = new Application();
 // ... register a command that creates a test stub with mocking
 $application->register('create-test-stub-with-mocks')
     ->addArgument('fqcn', InputArgument::OPTIONAL)
+    ->addOption('show-class-list-and-exit', null, InputOption::VALUE_NEGATABLE, 'Just show the class list?', false)
     ->addOption('no-wizard', null, InputOption::VALUE_NEGATABLE, 'Whether to avoid a wizard', false)
     ->addOption('with-wizard', null, InputOption::VALUE_NEGATABLE, 'Whether to have a wizard', false)
     ->addOption('include-vendor-classes', null, InputOption::VALUE_NEGATABLE, 'Include vendor classes?', false)
     ->setCode(function (InputInterface $input, OutputInterface $output) use ($classMap, $vendorDir): int {
 
-        
+        //Set up our list of autocomplete classes 
         $classesForAutoComplete = [];
         foreach ($classMap as $className => $path) {
             $realPath = realpath($path) ?: $path;
@@ -77,6 +78,23 @@ $application->register('create-test-stub-with-mocks')
                 $classesForAutoComplete[] = $className;
             }
         }
+
+        //If we're just showing available classes and exiting, then do that.
+        if ($input->getOption('show-class-list-and-exit')) {
+            print PHP_EOL . 
+                (
+                    $input->getOption('include-vendor-classes') ? 
+                    'Vendor classes are being included. ' : 
+                    'Vendor classes are being omitted. ') .
+                'Here is a list of available classes: ' . 
+                PHP_EOL . 
+                PHP_EOL . 
+                implode(PHP_EOL, $classesForAutoComplete) . 
+                PHP_EOL . 
+                PHP_EOL 
+                ;  
+            return Command::SUCCESS;
+        }        
 
         if ($input->getOption('with-wizard') && $input->getArgument('fqcn')) {
             print PHP_EOL . 
@@ -99,6 +117,7 @@ $application->register('create-test-stub-with-mocks')
         $noWizard = $input->getOption('no-wizard');
         $withWizard = $input->getOption('with-wizard');
 
+        //We need to know that the user is explicit about using or not using a wizard.
         if ((!$noWizard && !$withWizard) || ($noWizard && $withWizard)) {
             print PHP_EOL . 
                 'Please use EITHER the --with-wizard flag OR the --no-wizard flag.' . 
@@ -115,7 +134,13 @@ $application->register('create-test-stub-with-mocks')
             $selector = new ClassSelector($classesForAutoComplete);
                 $class = $selector->ask($input, $output);
 
-            if ($class === null) {
+            if ($class === null || $class === '') {
+                print PHP_EOL . 
+                    PHP_EOL . 
+                    'You did not choose a class. Exiting. ' . 
+                    PHP_EOL . 
+                    PHP_EOL
+                    ;
                 return Command::FAILURE;
             }
 

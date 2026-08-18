@@ -36,8 +36,10 @@ chmod +x ./bin/mock-it-all
   (Actually, the --wizard behavior should be the default behavior.)
   (A --no-wizard option can be added for those who don't want it.)
   (This is a breaking change, so a new major version should go along with it.)
-* Have the wizard balk if the user just hits enter immediately, without entering
-  part of a class name first.
+* x Create a --show-all-classes option that allows the user to simply see a list
+  of all available classes.
+* x Have the wizard disallow the ability to hit "enter" before seeing which
+  class name is selected.
 * Have the wizard look for a "tests" folder or a "test" folder, then allow the
   user to autocomplete which descendent directory should hold the new stub.
 * If no "tests" or "test" folder is found, have the wizard balk.

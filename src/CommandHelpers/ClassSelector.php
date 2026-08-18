@@ -34,10 +34,13 @@ final class ClassSelector
 
         $matches = $this->filter($query);
 
-        $output->write('Class: ');
-
         // Put the terminal into character-at-a-time mode.
         $this->setRawMode();
+
+        // Draw the prompt and the initial list of matches before reading
+        // any input, so the user can never hit Enter before seeing what
+        // they're about to select.
+        $this->redraw($output, $query, $matches, $selected);
 
         try {
             while (true) {
