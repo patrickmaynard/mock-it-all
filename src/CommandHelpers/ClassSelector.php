@@ -10,6 +10,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class ClassSelector
 {
+    private const MAX_VISIBLE_LINES = 10;
+
     /**
      * @param list<class-string> $classes
      */
@@ -31,6 +33,7 @@ final class ClassSelector
 
         $query = '';
         $selected = 0;
+        $scrollOffset = 0;
 
         $matches = $this->filter($query);
 
@@ -40,7 +43,7 @@ final class ClassSelector
         // Draw the prompt and the initial list of matches before reading
         // any input, so the user can never hit Enter before seeing what
         // they're about to select.
-        $this->redraw($output, $query, $matches, $selected);
+        $this->redraw($output, $query, $matches, $selected, $scrollOffset);
 
         try {
             while (true) {
@@ -65,10 +68,11 @@ final class ClassSelector
                     if ($query !== '') {
                         $query = substr($query, 0, -1);
                         $selected = 0;
+                        $scrollOffset = 0;
                         $matches = $this->filter($query);
                     }
 
-                    $this->redraw($output, $query, $matches, $selected);
+                    $this->redraw($output, $query, $matches, $selected, $scrollOffset);
                     continue;
                 }
 
@@ -85,7 +89,13 @@ final class ClassSelector
                         );
                     }
 
-                    $this->redraw($output, $query, $matches, $selected);
+                    $scrollOffset = $this->clampScrollOffset(
+                        $selected,
+                        $scrollOffset,
+                        count($matches),
+                    );
+
+                    $this->redraw($output, $query, $matches, $selected, $scrollOffset);
                     continue;
                 }
 
@@ -96,10 +106,11 @@ final class ClassSelector
 
                 $query .= $key;
                 $selected = 0;
+                $scrollOffset = 0;
 
                 $matches = $this->filter($query);
 
-                $this->redraw($output, $query, $matches, $selected);
+                $this->redraw($output, $query, $matches, $selected, $scrollOffset);
             }
         } finally {
             $this->restoreTerminal();
@@ -128,6 +139,27 @@ final class ClassSelector
     }
 
     /**
+     * Keeps $selected within the visible window, scrolling the minimum
+     * amount necessary rather than re-centering, so the list only moves
+     * once the selection reaches the top or bottom edge.
+     */
+    private function clampScrollOffset(
+        int $selected,
+        int $scrollOffset,
+        int $totalMatches,
+    ): int {
+        if ($selected < $scrollOffset) {
+            $scrollOffset = $selected;
+        } elseif ($selected >= $scrollOffset + self::MAX_VISIBLE_LINES) {
+            $scrollOffset = $selected - self::MAX_VISIBLE_LINES + 1;
+        }
+
+        $maxScrollOffset = max(0, $totalMatches - self::MAX_VISIBLE_LINES);
+
+        return max(0, min($scrollOffset, $maxScrollOffset));
+    }
+
+    /**
      * @param list<class-string> $matches
      */
     private function redraw(
@@ -135,6 +167,7 @@ final class ClassSelector
         string $query,
         array $matches,
         int $selected,
+        int $scrollOffset,
     ): void {
         // For a first implementation, clear the previous output and
         // redraw the entire widget.
@@ -161,15 +194,41 @@ final class ClassSelector
             $output->writeln($message);
             $lines = 2;
         } else {
-            foreach ($matches as $index => $class) {
+            // Cap the rendered list at MAX_VISIBLE_LINES so a long match
+            // list can never exceed a fixed height; the rest scrolls into
+            // view as the selection moves past either edge.
+            $visible = array_slice(
+                $matches,
+                $scrollOffset,
+                self::MAX_VISIBLE_LINES,
+                preserve_keys: true,
+            );
+
+            $writtenLines = 0;
+
+            if ($scrollOffset > 0) {
+                $output->writeln("  <comment>↑ {$scrollOffset} more above</comment>");
+                $writtenLines++;
+            }
+
+            foreach ($visible as $index => $class) {
                 if ($index === $selected) {
                     $output->writeln("  \033[7m$class\033[0m");
                 } else {
                     $output->writeln("  $class");
                 }
+
+                $writtenLines++;
             }
 
-            $lines = count($matches) + 1;
+            $hiddenBelow = count($matches) - ($scrollOffset + count($visible));
+
+            if ($hiddenBelow > 0) {
+                $output->writeln("  <comment>↓ {$hiddenBelow} more below</comment>");
+                $writtenLines++;
+            }
+
+            $lines = $writtenLines + 1;
         }
 
         // Move cursor back to the input line.

@@ -42,15 +42,20 @@ chmod +x ./bin/mock-it-all
   class name is selected.
 * x Fix the small bug in which typing "FryCook" causes a rendering bug in which
   the selection is shown as "FryCookOfCommerce"
-* Provide some form of scrollability for very long autocomplete lists -- as, for
-  example, when allowing vendor classes and starting to type "Sebast" ... this
-  way the terminal session doesn't freak out.
+* x Provide some form of scrollability for very long autocomplete lists -- as,
+  for example, when allowing vendor classes and starting to type
+  "SebastianBergman" ... this way the terminal session doesn't freak out.
 * Have the wizard look for a "tests" folder or a "test" folder, then allow the
   user to autocomplete which descendent directory should hold the new stub.
 * If no "tests" or "test" folder is found, have the wizard balk.
 * If the wizard is not active, require that a tests folder path be submitted,
   and that it exist.
+* Have the command ALWAYS write output to a new test class unless we explicitly
+  tell it to just dump out code.
 * Update the readme documentation to reflect all of these new behaviors.
+  Actually, the readme can give just the simplest example (which uses a wizard),
+  then tell the user to use the --help flag to get information on how to use the
+  command without a wizard.
 * Make the autocomplete UX work in a more user-friendly way for both
   autocompletes (FQCN autocompletion and test stub directory autocompletion).
 * Play around extensively in a fresh session, exploring all the options and
@@ -62,7 +67,11 @@ chmod +x ./bin/mock-it-all
   be installed in an existing SF app.
 * Test some more.
 * Create the new Symfony-integrated version of the command and test it.
-* Set up some basic PHPUnit test logic for your console command.
+* Now that the wizard is the default behavior, remove some of the more ponderous
+  behaviors associated with explicitly telling the command to use a wizard.
+  They're now somewhat redundant.
+* Test some more.
+* Set up some basic PHPUnit test logic for your non-Symfony console command.
 * Get feedback from a couple friends.
 * Allow output of a test stub to a file in the project root instead of standard out
 * Provide a default test class name that can be modified
