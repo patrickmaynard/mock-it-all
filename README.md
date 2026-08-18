@@ -14,7 +14,7 @@ composer require patrick-maynard/mock-it-all
 (This example creates stub test logic for the included President demo class.)
 
 ```
-php ./vendor/bin/mock-it-all create-test-stub-with-mocks "PatrickMaynard\MockItAll\Stubs\President"
+php ./vendor/bin/mock-it-all create-test-stub-with-mocks --fqcn="PatrickMaynard\MockItAll\Stubs\President" --test-folder=tests
 ```
 
 It is recommended that developers install this in development environments,
