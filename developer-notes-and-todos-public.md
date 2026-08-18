@@ -53,15 +53,15 @@ chmod +x ./bin/mock-it-all
 * x Now that the wizard is the default behavior, remove some of the more ponderous
   behaviors associated with explicitly telling the command to use a wizard.
   They're now somewhat redundant.
-* Have the command ALWAYS write output to a new test class unless we explicitly
+* x Have the command ALWAYS write output to a new test class unless we explicitly
   tell it to just dump out code.
-* Update the readme documentation to reflect all of these new behaviors.
+* x Update the readme documentation to reflect all of these new behaviors.
   Actually, the readme can give just the simplest example (which uses a wizard),
   then tell the user to use the --help flag to get information on how to use the
   command without a wizard.
-* Make the autocomplete UX work in a more user-friendly way for both
+* x Make the autocomplete UX work in a more user-friendly way for both
   autocompletes (FQCN autocompletion and test stub directory autocompletion).
-* Play around extensively in a fresh session, exploring all the options and
+* x Play around extensively in a fresh session, exploring all the options and
   nailing down any big bugs.
 * Abstract most of the command logic into a new class, which should contain at
   least four separate functions to get some of this bloat tamed. This will be
