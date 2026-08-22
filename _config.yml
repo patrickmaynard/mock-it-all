@@ -1,0 +1,5 @@
+theme: jekyll-theme-cayman
+title: Mock It
+description: |
+  Stop writing mock boilerplate.
+  Start writing tests.
