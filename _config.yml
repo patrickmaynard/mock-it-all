@@ -1,3 +1,5 @@
 theme: jekyll-theme-cayman
 title: Mock It
-description: Mock your dependencies with ease
+description: |
+  Stop writing mock boilerplate.
+  Start writing tests.
