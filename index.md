@@ -2,35 +2,46 @@
 layout: default
 ---
 
-Tool for creating mock dependency chains automatically, letting you focus on the actual tests
+`mock-it-all` automatically creates PHPUnit test classes with mocked constructor dependencies — so you can get from a production class to a ready-to-use test setup in seconds.  
 
-## How to use
+*Give it a class. Get a test.*
 
-In a pre-existing PHP project do the following to install the tool:
+## The problem
 
-```
-composer require patrick-maynard/mock-it-all
-```
+*Testing shouldn't start with plumbing.*
 
-... then run the `create-test-stub-with-mocks` command as shown below.
+Your class has a constructor with five dependencies.
+Before you can test a single line of actual behavior, you have to create mocks for every one of them, wire everything up and instantiate the class under test.
 
-(This example creates stub test logic for the included President demo class. It
-does so only if a folder called tests/Unit already exists.)
+You know the pattern. You’ve written it dozens of times.
 
-```
-php ./vendor/bin/mock-it-all create-test-stub-with-mocks --fqcn="PatrickMaynard\MockItAll\Stubs\President" --test-folder="tests/Unit"
-```
-... or if you want to use an interactive wizard to choose a class and path:
+`mock-it-all` takes care of it.
 
-```
-php ./vendor/bin/mock-it-all create-test-stub-with-mocks
-```
+1. **Tell us what you want to test**  
+   Provide the fully qualified class name of the class you want to test.
+   ```php
+   App\Service\OrderService
+   ```
+2. **Let mock-it-all do the tedious work**  
+   The constructor is inspected and its dependencies are automatically turned into mocks.
+3. **Get a ready-to-use test**  
+   A test class is generated directly in your test directory — with the required mocks and the class under test already wired up.
 
-To get some other options for the CLI command:
+**Less setup. More testing.**
 
-```
-php ./vendor/bin/mock-it-all create-test-stub-with-mocks --help
-```
+## Features
 
-It is recommended that developers install this in development environments,
-not in test, stage or production environments.
+**Automatic constructor mocking**  
+Detect constructor dependencies and create the required mocks automatically.
+
+**Ready-to-use test classes**  
+Generate a test class in your test directory instead of starting from an empty file.
+
+**CLI-first workflow**  
+Works right where you already work: in your terminal and alongside your Composer project.
+
+**Interactive assistant**  
+Prefer a guided workflow? Let the interactive assistant walk you through creating your test.
+
+**Built for PHP & PHPUnit**  
+Designed around the tools and workflows PHP developers already use.
